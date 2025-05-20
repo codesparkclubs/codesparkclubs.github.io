@@ -1,0 +1,9 @@
+# Ignore .DS_Store files and its alternate names
+.DS_Store
+.DS_Store?
+._.DS_Store
+
+# Ignore .DS_Store files in subfolders
+**/.DS_Store
+**/.DS_Store?
+**/._.DS_Store
