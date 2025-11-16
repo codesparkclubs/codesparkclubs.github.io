@@ -1,32 +1,13 @@
+/* Base Styles */
 :root {
-    --primary-color: #8DA9C4;    /* Steel Blue */
-    --secondary-color: #13315C;  /* Navy Blue */
-    --bg-color: #0B2545;         /* Dark Navy */
-    --text-color: #EEF4ED;       /* Off White */
-    --gray-dark: #134074;        /* Medium Navy */
-    --gray-light: #8DA9C4;       /* Light Steel Blue */
-    --accent-color: #EEF4ED;     /* Off White Accent */
+    --primary-color: #D97D54;  /* Keeping existing accent color */
+    --secondary-color: #002138; /* Slightly lighter than bg for contrast */
+    --bg-color: #001524;       /* New background color */
+    --text-color: #FFECD1;     /* New text color */
+    --gray-dark: #001d30;      /* Adjusted dark gray for new bg */
+    --gray-light: #002947;     /* Adjusted light gray for new bg */
     --transition-speed: 0.3s;
     --border-radius: 12px;
-}
-
-.emphasis {
-    font-style: italic;
-    letter-spacing: 0.2px;
-}
-
-.strong-emphasis {
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: var(--primary-color);
-}
-
-.tagline {
-    font-size: 1.2em;
-    font-style: italic;
-    letter-spacing: 0.3px;
-    color: var(--text-color);
-    opacity: 0.9;
 }
 
 * {
@@ -161,16 +142,6 @@ section {
 .hero-content {
     flex: 1;
     animation: fadeInLeft 1s ease-out;
-}
-
-.hero-content h1 {
-    margin-bottom: 1.5rem;
-    line-height: 1.1;
-    letter-spacing: -0.5px;
-}
-
-.hero-content .tagline {
-    margin-bottom: 2.5rem;
 }
 
 .hero-content p {
@@ -354,10 +325,8 @@ input, select, textarea {
 }
 
 .submit-button:hover, .cta-button:hover, .close-button:hover {
-    background-color: var(--accent-color);  /* Using the off-white accent color instead */
-    color: var(--bg-color); /* Using dark background color for contrast */
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    background-color: #80ffff;  /* Lighter cyan for hover state */
+    color: black;
 }
 
 .contact-info {
