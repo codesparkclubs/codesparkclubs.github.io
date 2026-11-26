@@ -397,3 +397,6 @@ footer { border-top: 1px solid var(--edge-soft); padding: clamp(2.5rem, 5vw, 4re
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* spam trap: off-screen, never shown */
+.form__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

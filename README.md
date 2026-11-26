@@ -1,9 +1,357 @@
 # CodeSpark Clubs
 
-The GitHub Pages site for CodeSpark Clubs, adapted from [Jarvis21stCentury/codespark-clubs](https://github.com/Jarvis21stCentury/codespark-clubs).
+The website for CodeSpark Clubs, live at **https://codesparkclubs.github.io**.
 
-- `index.html` is the full site.
-- `lite.html` is the reduced-motion version.
-- `assets/` contains the site styles, scripts, and images.
+This repo is the single source for everything: the site and the one bit of
+server code behind the request form. There used to be a second copy at
+`Jarvis21stCentury/codespark-clubs`; that is now only a mirror of `api/` and
+every page on it redirects here.
 
-The site is static and deploys from the root of `main` through the GitHub Pages workflow in `.github/workflows/static.yml`. The request form's serverless endpoint is not hosted on GitHub Pages; when it is unavailable, the form opens a prefilled email to `clubs.codespark@gmail.com`.
+| Part | Where | How it deploys |
+|---|---|---|
+| The site (`index.html`, `lite.html`, `assets/`) | GitHub Pages, codesparkclubs.github.io | `.github/workflows/static.yml` on every push to `main` |
+| The request form endpoint (`api/request.mjs`) | Vercel, codespark-clubs.vercel.app/api/request | Vercel's Git integration |
+
+Static site. No build step, no dependencies to install for the pages.
+
+## Run it
+
+```bash
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+Opening `index.html` from the filesystem mostly works, but serve it over HTTP if
+you want the pinned scroll scenes to measure correctly.
+
+## Deploy
+
+Push to `main`. The Pages workflow publishes only the files the site serves:
+the HTML, `assets/`, the icons, `og-image.png`, `robots.txt` and
+`sitemap.xml`. `api/`, the package files, `vercel.json`, this README and the
+lossless robot PNG masters stay out of the published site.
+
+The Vercel project only exists for the form endpoint. `vercel.json`
+redirects every non-API path on codespark-clubs.vercel.app to the same path
+here, so there is only ever one site.
+
+## Files
+
+```
+index.html              the homepage
+lite.html               the light version — same content, zero animation
+assets/css/site.css     design system + all layout
+assets/css/lite.css     the light version's styles, standalone
+assets/css/robot-reveal.css
+assets/js/site.js       the motion system (documented at the top of the file)
+assets/js/robot-reveal.js
+assets/vendor/          GSAP, ScrollTrigger, Lenis, SplitType, served from here
+assets/img/             robot pair + Pexels photos, each with a lite- variant
+about.html              redirect for the old About page's URL
+og-image.png            the preview card shown when the link is shared
+favicon.svg, favicon-32.png, apple-touch-icon.png
+robots.txt, sitemap.xml
+api/request.mjs         serverless endpoint behind the request form (Vercel)
+vercel.json             redirects the Vercel host here, except /api
+package.json            one dependency, nodemailer, for the endpoint
+```
+
+The standalone `robot-reveal/` component and the original `robot-reveal.zip`
+upload are kept out of this repo on purpose — they live in the working folder
+and nothing the site serves depends on them.
+
+## What came from the old site
+
+Everything factual is carried over verbatim or close to it: the tagline, the
+three pillars (curriculum & activities, network, promo materials), the four
+steps, the 24-hour delivery promise, the founding year, the club network,
+the three founders, `clubs.codespark@gmail.com`, and the "creating the next
+generation of technology leaders" line.
+
+## Things you should check before publishing
+
+1. **The `$0` stat.** The old site never states a price, but it gives materials
+   away through a request form, so the homepage says the club costs nothing to
+   run. If that's wrong, edit the fourth `.stat` block in `index.html`.
+2. **The stats row.** 128+ schools, 2,700+ students, 8 countries, $0 — the
+   figures Armaan supplied. Each tile is a `data-count` attribute in
+   `index.html`; add `data-plus` for a trailing "+" and `data-group` for a
+   thousands separator. The same numbers appear in the hero meta row and in the
+   last line of the About timeline, so update all three together.
+3. **Meeting counts on the kit modules.** "4 meetings", "5 meetings" and so on
+   are placeholders describing a semester's shape. Replace with the real module
+   lengths.
+4. **The gallery photos are stock.** They're tagged by session type rather than
+   by event, so nothing claims to be a real CodeSpark meeting. Swap in real club
+   photos when you have them and the tags will still read correctly.
+5. **`RESOURCES_PASSWORD` must be set on Vercel** for the materials email to
+   include the resources-site password. See "Request form email" below.
+
+## Design system
+
+BMW Individual "Frozen Black". Matte paint scatters light instead of
+returning it, so nothing in here is pure `#000` and nothing carries a
+specular highlight.
+
+| | |
+|---|---|
+| Ground | `#0b0c0d` void, `#121416` graphite, `#191b1e` carbon — matte body panels, faintly cool |
+| Accent | brushed aluminium trim, `#eef0f3` → `#c3c9d1` → `#79808a`. The only material on the page that shines |
+| Signal | `#d8452a` ember, used like a brake caliper behind a matte wheel: rarely, and small |
+| Finish | a fixed grain sheet plus an edge vignette, both over the whole page |
+| Type | Big Shoulders Display (display), Familjen Grotesk (body), Martian Mono run wide (labels) — all Google Fonts, one host. The pairing is built on **contrast**: a tall industrial condensed display against a squat wide technical mono, opposites on every axis, with the body face staying out of the way between them. Deliberately none of the defaults, and deliberately not a fourth bold geometric sans — see below. |
+| Motif | the aperture: a circle that opens onto what's inside |
+
+Photography is graded to match — 88% grayscale, contrast up, brightness
+down — so no stock photo drags a colour cast into the scheme.
+
+The accent is deliberately not the lime green from Lando Norris's site, and
+deliberately not the purple-blue gradient every AI landing page uses.
+
+## Motion
+
+Twenty-five named patterns, listed and explained at the top of
+`assets/js/site.js`. The signature is **Ignition Reveal**: on desktop the hero
+pins, scroll progress opens the robot's face panel, and the cursor steers where
+inside the head you're looking. Two inputs on one object.
+
+The kit cards reuse the same aperture at card scale, and the custom cursor
+becomes that aperture when it's over one — the repetition is what makes the page
+read as one piece rather than a list of effects.
+
+### Section transitions
+
+Ten boundaries, ten different mechanics, none repeated — a shutter, a raking
+blade, a centre split, a fanned deck, an iris, a rack, a tilt, a shear, a warp,
+a drawer. Each one is authored around what the section actually is: the stats
+row is four panels, so it splits; the gallery is a stack of prints, so it fans;
+the kit is six modules to be loaded, so they slide in like trays into a rack.
+
+What keeps ten different moves reading as one page is **the seam** — a single
+trim line drawn across every boundary as you cross it, alternating direction.
+
+All ten are additive. The elements they animate behind (the blade, the seams)
+are injected by JavaScript, so with JS off there is simply nothing to hide
+behind and every section renders in full.
+
+The whole page runs off one tempo dial — `TEMPO` at the top of
+`assets/js/site.js`. Every duration, stagger and scrub is authored in base
+seconds and multiplied through it, so the pace of the site is one number.
+
+### Ambient life
+
+Patterns 1-22 are all *transitions into* something: they fire once at a
+boundary and then the section holds still. A page built only of those reads as
+static no matter how many of them there are, which is exactly how this one
+read. Three patterns run continuously instead:
+
+- **23 Drift Plates** — every photograph rides slower than the frame holding
+  it, at one of three depths so no two neighbours track together. The images
+  are oversized and offset in CSS (`height:118%; top:-9%`) purely to give the
+  plate headroom to travel through without exposing an edge. Note the hover
+  scale on `.shot img` / `.door__bg img` uses the independent `scale` property,
+  not `transform: scale()` — GSAP owns `transform` for the drift, and the two
+  compose only if they stay on separate properties.
+- **24 Idle Respiration** — the hero breathes on a slow sine. The pin timeline
+  drives `.hero__figure`, so this animates `#heroReveal` *inside* it and the
+  transforms compose rather than fight.
+- **25 Current Run** — a charge travels the length of every section rule.
+
+Everything degrades: `prefers-reduced-motion` gets a full static page with the
+horizontal steps stacked and no section transitions at all, touch devices skip
+the cursor and pin, and if the CDNs fail the page still renders and reads in
+full (nothing is hidden in CSS that only JavaScript can bring back).
+
+### Why the type is what it is
+
+This went through four display faces — Archivo, Syne, Clash Display, and now
+Big Shoulders — and the first three all failed the same way: they were the
+same *category*. A wide bold geometric sans over a neutral sans is the
+templated pairing, so swapping one for another changed nothing. If the type
+ever needs revisiting, change the *relationship* between the faces, not the
+face.
+
+What works here is contrast. The display is tall and condensed; the mono is
+squat and wide; they read as a deliberate pair rather than three variations on
+one idea. Condensed also buys a lot of room — the same word takes far less
+width, which is why the headings run much larger than any previous face
+allowed.
+
+Small display text needs the opposite treatment from large. A condensed face
+loses presence as it shrinks, and the negative tracking that suits a 100px
+heading makes a 16px one look cramped, so `.brand__name`, `.founder__name`,
+`.module__name` and `.step__name` all carry *positive* tracking and a heavier
+weight.
+
+### Sizing headings after a face change
+
+Don't scale off a single measured word — the ratio between two faces changes
+with the string (Clash was narrower than Syne for "CODESPARK" and 7% wider for
+"STUDENTS"), so one word will lie to you. Measure the real headings: render
+each `.display` heading across viewport widths and check the widest rendered
+line against its container. Current worst case is `.door__title` at ~71% fill
+around 900px. The hero wordmark is exempt — `fitWordmark()` sizes it to the
+stage at runtime, so a condensed face simply makes it taller (362px at 1440px
+wide), and its height should be checked against the stage.
+
+### Two typography traps that already bit once
+
+Both produced the same symptom, a word broken mid-way across two lines
+("STUDENT / S"), and neither is visible in the source:
+
+1. **`SplitType` needs `words` in its types list.** With `lines,chars` every
+   character is a bare inline-block and the browser may break *between any two
+   of them*. `lines,words,chars` keeps each word atomic. Nothing animates a
+   word — the wrappers exist purely to stop the break.
+2. **Nothing may measure before the webfonts land.** `start()` is gated behind
+   `whenFontsReady()`, because the wordmark fit, SplitType's line breaks and
+   ScrollTrigger's positions are all only correct against real font metrics.
+   Measuring against the fallback and reflowing afterwards is what broke the
+   heading. The gate has a 2.5s cap so a slow or blocked font CDN can never
+   hold the page — verified by blocking Fontshare outright: the page still
+   renders, falls back to Helvetica Neue and clears its preloader.
+
+## Performance
+
+The page holds a locked 60fps with no frame over 32ms anywhere in a full-page
+scroll (worst frame 18.7ms). It did not start that way — it had hitches of
+250-350ms at the hero and the gallery, which read as "glitchy". The cause was
+not JavaScript (there were no long tasks): it was image decode. Every photo
+shipped at 1500px regardless of the ~260-630px it actually rendered at, and the
+two robot cutouts were 2.8MB of PNG.
+
+So, if you add images: **size them to what they actually render at** (2x for
+retina) and keep the cutouts as WebP. The robot pair went 2.8MB → 134KB with
+the alpha mask intact. Everything together went 6.7MB → 2.0MB. Every `<img>`
+also carries `decoding="async"` so decode stays off the main thread.
+
+## The light version
+
+`lite.html` is the same content with none of the machinery — no GSAP,
+ScrollTrigger, Lenis or SplitType, no canvas, no custom cursor, no smooth
+scroll, no pinned or scrubbed sections, no parallax. Nothing animates at all:
+no transitions, no keyframes, no smooth anchor scrolling. The browser paints
+once and then rests.
+
+Measured over the same five-second scroll: **68ms** of main-thread work against
+**876ms** for the full site. 601KB against 2072KB, and zero external scripts
+against four. Images are `lite-` variants at 640px and lower quality; the body
+and label faces are whatever the machine already has, leaving one webfont
+request for the display face.
+
+### How someone ends up there
+
+Three ways, in `assets/js/site.js`:
+
+1. **They choose it** — a footer link, or the banner. The choice is stored in
+   `localStorage` under `cs-view` and an inline script in `<head>` acts on it
+   *before* any library is requested, so a returning visitor never downloads
+   the heavy page again.
+2. **Hardware hints suggest it** (`liteOffer`) — low core count, low memory, or
+   Save-Data. These only ever produce an *offer*, because specs are a poor
+   proxy: a four-core laptop may run this perfectly well. A missing hint is
+   never treated as weak.
+3. **Measured frame rate proves it** (`autoLite`) — the page samples its own
+   frame times for four seconds after the entrance animations settle, and if
+   the median frame is slower than `BAD_MS` (40ms, about 25fps) it switches on
+   its own and says so on arrival.
+
+`?full=1` overrides all of it permanently, so nobody can be trapped.
+
+Two traps if you change `autoLite`. The sample floor must stay tiny — frames
+are the thing a slow machine cannot produce, so a high minimum bails out
+exactly when it should act. And `BAD_MS` must stay above 33ms, because a
+laptop on battery or a 30Hz panel legitimately reports 33.3ms and should not
+be exiled for it.
+
+## Third-party scripts
+
+GSAP 3.12.5, ScrollTrigger, Lenis 1.1.13 and SplitType 0.3.4 are copied into
+`assets/vendor/` (byte-identical to the CDN builds) instead of loading from
+cdnjs, jsdelivr and unpkg. School networks block CDNs often enough that one
+missing library would drop the page into its no-animation fallback. The only
+remaining outside request is Google Fonts, and the page already copes without
+it.
+
+## The robot
+
+`robot-exterior.webp` and `robot-interior.webp` are what the page actually
+loads. `robot-exterior.png` and `robot-interior.png` are kept as the lossless
+masters they were derived from — nothing references them at runtime, so if you
+re-cut the mattes, edit the PNGs and re-export the WebPs from them.
+
+The PNGs are the two source frames with the
+studio background matted out (Vision subject mask, eroded ~1px and feathered so
+the dark background leaves no fringe). Both were matted with the *exterior's*
+mask — only the face region differs between the frames, so the silhouettes
+match. The unmatted `.jpg` originals live with the standalone component in
+`robot-reveal/assets/`, which is framed and wants its black ground; they were
+duplicated here and the duplicates have been removed.
+
+## Photography
+
+All photos from [Pexels](https://www.pexels.com), free to use under the Pexels
+licence, no attribution required. Filenames keep the Pexels photo ID
+(`px-8199134.jpg` → `pexels.com/photo/8199134`) so you can trace any of them.
+
+
+## Request form email
+
+Both pages post to `https://codespark-clubs.vercel.app/api/request`
+(GitHub Pages cannot run code). `api/request.mjs` sends two emails through
+**Gmail's SMTP**, using an app password on `clubs.codespark@gmail.com`:
+
+1. **The materials email**, to the requester: the Google Drive link, and the
+   `sparkresources.github.io` address and password when `RESOURCES_PASSWORD`
+   is set.
+2. **The submission**, to `clubs.codespark@gmail.com`, with `Reply-To` set to
+   the requester. If the materials email failed, the subject is prefixed
+   `[ACTION NEEDED]`.
+
+If the endpoint is unreachable the form falls back to a pre-filled mail
+draft, so a request is never silently lost.
+
+### Abuse protection
+
+The endpoint makes the club's Gmail send an email to whatever address is
+typed in, so it is locked down:
+
+- **CORS allowlist.** Browsers on any site other than codesparkclubs.github.io
+  and codespark-clubs.vercel.app are refused.
+- **Honeypot.** A hidden `website` field. Anything that fills it in is told
+  "sent" and nothing is mailed.
+- **Minimum fill time.** A form submitted within 3 seconds of the page loading
+  is treated the same way.
+- **Rate limits.** 3 requests per IP per hour, 1 per email address per 6
+  hours, 60 per hour overall. A rate-limited visitor sees "we already have
+  your request" instead of a mail draft.
+- **Greeting.** The requester's first name is the only text they control in
+  the email we send them; anything that doesn't look like a name becomes
+  "there", so the form cannot be used to send arbitrary text.
+
+The rate limits are kept in memory per serverless instance. For a hard limit,
+add a rate-limit rule for `/api/request` under Firewall in the Vercel project.
+
+### Closing the form
+
+`REQUESTS_PAUSED` at the top of `api/request.mjs` is a kill switch. Set it to
+`true` and the endpoint refuses every submission and sends no mail.
+
+### Configuration (Vercel environment variables)
+
+| Name | Value |
+|---|---|
+| `GMAIL_USER` | the sending account — `clubs.codespark@gmail.com` |
+| `GMAIL_APP_PASSWORD` | a 16-character app password, **not** the account password |
+| `MAIL_TO` | where submissions are filed. Defaults to `GMAIL_USER`. |
+| `RESOURCES_PASSWORD` | the sparkresources.github.io password. Optional; without it the email gives only the Drive link. |
+
+The resources password used to be written in `api/request.mjs`. It is still
+in git history, so treat the old one as public: change it on
+sparkresources.github.io and put the new one only in `RESOURCES_PASSWORD`.
+
+The app password comes from
+[myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+(requires 2-Step Verification). Whitespace is stripped, since Google shows it
+in four groups of four. Until it exists the endpoint returns 503 and the form
+falls back to a mail draft.

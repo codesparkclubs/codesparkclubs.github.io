@@ -78,6 +78,12 @@ body {
   font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Section transitions slide panels in from off-screen. overflow-x on html
+     alone does not stop mobile browsers widening the layout viewport to fit
+     them, which shifted the whole page sideways on phones and cut off its
+     left edge. clip (unlike hidden) creates no scroll container, so sticky
+     and pinned sections are unaffected. */
+  overflow-x: clip;
 }
 
 img { max-width: 100%; display: block; }
@@ -360,6 +366,9 @@ html.js .boot {
 }
 
 .nav__links { display: flex; gap: 2rem; align-items: center; }
+/* only shown inside the phone menu, where the header CTA is hidden */
+.nav__link--cta { display: none; }
+@media (max-width: 520px) { .nav__link--cta { display: block; color: var(--paper); } }
 .nav__link {
   font-family: var(--font-mono);
   font-stretch: var(--mono-wide);
@@ -411,7 +420,52 @@ html.js .boot {
 .nav__cta:hover::before { transform: translateY(0); }
 .nav__cta:hover span { color: var(--void); }
 
-@media (max-width: 860px) { .nav__links { display: none; } }
+/* menu button: only exists below 860px, where the links collapse */
+.nav__menu {
+  display: none;
+  width: 42px; height: 42px;
+  margin-left: 0.6rem;
+  border: 1px solid var(--edge);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  flex: none;
+}
+.nav__menu i {
+  position: absolute;
+  left: 11px; right: 11px;
+  height: 1px;
+  background: var(--paper);
+  transition: transform 0.35s var(--ease-out), top 0.35s var(--ease-out);
+}
+.nav__menu i:first-child { top: 16px; }
+.nav__menu i:last-child { top: 24px; }
+.nav.is-open .nav__menu i:first-child { top: 20px; transform: rotate(45deg); }
+.nav.is-open .nav__menu i:last-child { top: 20px; transform: rotate(-45deg); }
+
+@media (max-width: 860px) {
+  .nav__menu { display: block; }
+  .nav__cta { margin-left: auto; }
+  .nav__links {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.5rem var(--gutter) 1.25rem;
+    background: var(--void);
+    border-bottom: 1px solid var(--edge-soft);
+  }
+  .nav.is-open .nav__links { display: flex; }
+  .nav__links .nav__link { padding: 1rem 0; font-size: 0.78rem; border-bottom: 1px solid var(--edge-soft); }
+}
+/* On a phone the brand, the CTA and the menu button do not fit on one row.
+   The CTA moves into the open menu instead; the hero repeats it anyway. */
+@media (max-width: 520px) {
+  .nav__cta { display: none; }
+  .nav__menu { margin-left: auto; }
+}
 
 /* ---------- hero ----------
    Lando-Norris logic: one subject, centred, at full height, with the
@@ -1010,8 +1064,9 @@ html.js .boot {
   background: #000;
   border: 1px solid var(--edge-soft);
   transition: border-color 0.4s;
-  cursor: none;
+  cursor: crosshair;
 }
+.has-cursor .module__frame { cursor: none; }
 .module:hover .module__frame { border-color: var(--edge); }
 .module .robot-reveal { max-width: none; border-radius: 0; aspect-ratio: 4/3; }
 .module .robot-reveal__img { aspect-ratio: 4/3; }
@@ -1446,3 +1501,14 @@ html.js .boot {
 .lite-offer__go { background: var(--trim); color: var(--void); border-color: var(--trim); font-weight: 600; }
 .lite-offer__no { color: var(--steel-dim); }
 .lite-offer__no:hover { color: var(--paper); }
+
+/* ---------- spam trap + touch copy ---------- */
+
+/* Off-screen rather than display:none, which some bots skip. */
+.form__hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.kit__hint-touch { display: none; }
+@media (hover: none) {
+  .kit__hint-fine { display: none; }
+  .kit__hint-touch { display: inline; }
+}
