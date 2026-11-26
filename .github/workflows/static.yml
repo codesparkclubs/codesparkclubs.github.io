@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html lite.html about.html robots.txt sitemap.xml \
-             favicon.svg favicon-32.png apple-touch-icon.png og-image.png _site/
+             favicon.svg favicon-32.png apple-touch-icon.png og-image-v2.png _site/
           cp -r assets _site/
           rm -f _site/assets/img/robot-exterior.png _site/assets/img/robot-interior.png
           touch _site/.nojekyll

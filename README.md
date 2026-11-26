@@ -27,7 +27,7 @@ you want the pinned scroll scenes to measure correctly.
 ## Deploy
 
 Push to `main`. The Pages workflow publishes only the files the site serves:
-the HTML, `assets/`, the icons, `og-image.png`, `robots.txt` and
+the HTML, `assets/`, the icons, `og-image-v2.png`, `robots.txt` and
 `sitemap.xml`. `api/`, the package files, `vercel.json`, this README and the
 lossless robot PNG masters stay out of the published site.
 
@@ -48,7 +48,7 @@ assets/js/robot-reveal.js
 assets/vendor/          GSAP, ScrollTrigger, Lenis, SplitType, served from here
 assets/img/             robot pair + Pexels photos, each with a lite- variant
 about.html              redirect for the old About page's URL
-og-image.png            the preview card shown when the link is shared
+og-image-v2.png            the preview card shown when the link is shared
 favicon.svg, favicon-32.png, apple-touch-icon.png
 robots.txt, sitemap.xml
 api/request.mjs         serverless endpoint behind the request form (Vercel)
