@@ -109,7 +109,24 @@
     this.start();
   };
 
-  RobotReveal.prototype.onLeave = function () {
+  RobotReveal.prototype.onLeave = function (e) {
+    // A finger lifting fires pointerleave straight away, which made a tap
+    // flash the inside for a frame and close again. On touch the aperture
+    // stays open where you tapped until you tap somewhere else.
+    if (e && e.pointerType === 'touch' && e.type === 'pointerleave') {
+      var self = this;
+      if (!this.onOutside) {
+        this.onOutside = function (ev) {
+          if (self.el.contains(ev.target)) return;
+          document.removeEventListener('pointerdown', self.onOutside);
+          self.onOutside = null;
+          self.target.r = 0;
+          self.start();
+        };
+        document.addEventListener('pointerdown', this.onOutside, { passive: true });
+      }
+      return;
+    }
     this.target.r = 0;
     this.start();
   };

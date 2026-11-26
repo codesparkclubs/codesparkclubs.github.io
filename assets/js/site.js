@@ -374,6 +374,7 @@
     if (REDUCED || COARSE || !hasGSAP) { dot.remove(); return; }
 
     dot.classList.add('is-live');
+    document.documentElement.classList.add('has-cursor');
     var t = { x: innerWidth / 2, y: innerHeight / 2 };
     var p = { x: t.x, y: t.y };
 
@@ -933,6 +934,26 @@
       addEventListener('scroll', function () {
         nav.classList.toggle('is-stuck', window.scrollY > 40);
       }, { passive: true });
+
+      // Below 860px the links collapse behind a menu button.
+      var menu = document.getElementById('navMenu');
+      var setOpen = function (open) {
+        nav.classList.toggle('is-open', open);
+        if (menu) {
+          menu.setAttribute('aria-expanded', open ? 'true' : 'false');
+          menu.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        }
+      };
+      if (menu) {
+        menu.addEventListener('click', function () { setOpen(!nav.classList.contains('is-open')); });
+        nav.querySelectorAll('.nav__links a, .nav__cta').forEach(function (a) {
+          a.addEventListener('click', function () { setOpen(false); });
+        });
+        addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+        document.addEventListener('click', function (e) {
+          if (nav.classList.contains('is-open') && !nav.contains(e.target)) setOpen(false);
+        });
+      }
     }
 
     var form = document.getElementById('requestForm');
@@ -940,6 +961,14 @@
     if (!form) return;
 
     var submit = form.querySelector('button[type="submit"]');
+
+    // The site is served by GitHub Pages, which cannot run code, so the form
+    // posts to the one serverless function on Vercel. On the Vercel host
+    // itself a relative path is enough.
+    var API = /\.vercel\.app$/.test(location.hostname)
+      ? '/api/request'
+      : 'https://codespark-clubs.vercel.app/api/request';
+    var T0 = Date.now();
 
     // Posts to the serverless endpoint, which files the submission in the
     // CodeSpark inbox and sends the requester their confirmation. If that
@@ -967,20 +996,33 @@
       e.preventDefault();
 
       var d = new FormData(form);
+      // Filled honeypot: almost certainly a bot. Pretend it worked.
+      if (d.get('website')) { form.reset(); if (status) status.textContent = 'Sent'; return; }
 
       if (!window.fetch || location.protocol === 'file:') { mailtoFallback(d); return; }
 
       var payload = {};
       d.forEach(function (v, k) { payload[k] = String(v); });
+      // How long the form was open. Bots fill it in milliseconds.
+      payload.elapsed = String(Date.now() - T0);
 
       if (submit) submit.disabled = true;
       if (status) status.textContent = 'Sending…';
 
-      fetch('/api/request', {
+      fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(function (res) {
+        // Rate-limited: the request is already in, so say that rather than
+        // opening a mail draft that would duplicate it.
+        if (res.status === 429) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            var err = new Error('limited');
+            err.shown = (j && j.message) || 'We already have your request. Check your inbox.';
+            throw err;
+          });
+        }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       }).then(function (data) {
@@ -994,8 +1036,9 @@
           status.classList.add('is-ok');
         }
         if (submit) submit.disabled = false;
-      }).catch(function () {
+      }).catch(function (err) {
         if (submit) submit.disabled = false;
+        if (err && err.shown) { if (status) status.textContent = err.shown; return; }
         mailtoFallback(d);
       });
     });
